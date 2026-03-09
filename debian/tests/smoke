@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+run_as_test_user() {
+  su -s /bin/bash nobody -c "$1"
+}
+
+run_as_test_user "jira2md --help >/dev/null"
+run_as_test_user "confluence2md --help >/dev/null"
+run_as_test_user "jira2md --version >/dev/null"
+run_as_test_user "confluence2md --version >/dev/null"
+
+jira_root_output="$(jira2md TEST-1 --stdout 2>&1 || true)"
+if ! grep -Fq "Do not run this script with sudo/root." <<<"$jira_root_output"; then
+  echo "jira2md did not refuse root execution." >&2
+  exit 1
+fi
+
+confluence_root_output="$(confluence2md 123 --stdout 2>&1 || true)"
+if ! grep -Fq "Do not run this script with sudo/root." <<<"$confluence_root_output"; then
+  echo "confluence2md did not refuse root execution." >&2
+  exit 1
+fi
