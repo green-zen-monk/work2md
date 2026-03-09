@@ -73,15 +73,67 @@ jobs:
           cp "../work2md_${version}_all.deb" dist/
           cp "../work2md_${version}_amd64.buildinfo" dist/
           cp "../work2md_${version}_amd64.changes" dist/
+          (
+            cd dist
+            sha256sum "work2md_${version}_all.deb" > "work2md_${version}_all.deb.sha256"
+          )
+
+      - name: Prepare GitHub release notes
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(dpkg-parsechangelog -S Version)"
+          upstream_version="${version%%-*}"
+          tag_version="${GITHUB_REF_NAME#v}"
+          changelog_section_file="${RUNNER_TEMP}/work2md-changelog-section.md"
+          release_notes_file="${RUNNER_TEMP}/work2md-release-notes.md"
+
+          if [[ "$tag_version" != "$upstream_version" ]]; then
+            echo "Git tag ${GITHUB_REF_NAME} does not match package version ${upstream_version}." >&2
+            exit 1
+          fi
+
+          awk -v version="$upstream_version" '
+            $0 ~ "^## \\[" version "\\]" { capture=1; next }
+            /^## \[/ && capture { exit }
+            capture { print }
+          ' CHANGELOG.md > "$changelog_section_file"
+
+          if [[ ! -s "$changelog_section_file" ]]; then
+            echo "No CHANGELOG.md entry found for version ${upstream_version}." >&2
+            exit 1
+          fi
+
+          cat > "$release_notes_file" <<EOF
+          $(cat "$changelog_section_file")
+
+          ## Install on Ubuntu
+
+          \`\`\`bash
+          sudo apt install ./work2md_${version}_all.deb
+          \`\`\`
+
+          Installed commands:
+
+          - \`jira2md\`
+          - \`confluence2md\`
+
+          Verify the package checksum with:
+
+          \`\`\`bash
+          sha256sum -c work2md_${version}_all.deb.sha256
+          \`\`\`
+          EOF
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: work2md-packages
+          name: work2md-release-assets
           path: dist/*
 
       - name: Publish GitHub release assets
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
+          name: work2md ${{ github.ref_name }}
+          body_path: ${{ runner.temp }}/work2md-release-notes.md
           files: dist/*

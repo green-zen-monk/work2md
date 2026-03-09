@@ -14,11 +14,13 @@
   the autopkgtest smoke suite.
 - Tagged pushes matching `v*` also publish the built `.deb`, `.changes`, and
   `.buildinfo` files to the matching GitHub Release.
-- Before creating a tag, keep [`VERSION`](../VERSION) and `debian/changelog` in sync.
+- GitHub Release notes are sourced from [`CHANGELOG.md`](../CHANGELOG.md).
+- Before creating a tag, keep [`VERSION`](../VERSION), `debian/changelog`, and
+  the matching `CHANGELOG.md` entry in sync.
 
 ## Release flow
 
-1. Update [`VERSION`](../VERSION) and `debian/changelog` for the new release.
+1. Update [`VERSION`](../VERSION), `debian/changelog`, and [`CHANGELOG.md`](../CHANGELOG.md) for the new release.
 2. Commit the release changes and push them to GitHub.
 3. Create a matching Git tag such as `v0.1.0` and push the tag.
 4. GitHub Actions will build the release artifacts automatically and attach them to the GitHub Release.
