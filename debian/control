@@ -1,0 +1,19 @@
+Source: work2md
+Section: utils
+Priority: optional
+Maintainer: Budai Krisztián (GreenZenMonk) <72669043+green-zen-monk@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+
+Package: work2md
+Architecture: all
+Depends:
+ bash,
+ curl,
+ jq,
+ python3,
+ ${misc:Depends}
+Description: Atlassian Jira and Confluence export CLIs
+ Export Jira issues and Confluence Cloud pages to Markdown from the command
+ line.

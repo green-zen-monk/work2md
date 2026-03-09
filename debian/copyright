@@ -1,0 +1,15 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: work2md
+Source: https://launchpad.net/
+
+Files: *
+Copyright: 2026 Budai Krisztián (GreenZenMonk)
+License: all-rights-reserved
+ This repository is intentionally published without an open source license.
+ Except where applicable law permits otherwise, no rights are granted to use,
+ modify, or redistribute this code without explicit permission from the
+ copyright holder.
+ .
+ This notice documents the upstream repository status only. Any separate
+ permission to use or distribute packaged builds would need to be granted
+ explicitly by the copyright holder.

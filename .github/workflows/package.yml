@@ -1,0 +1,87 @@
+name: Package
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autopkgtest \
+            build-essential \
+            debhelper \
+            devscripts \
+            dpkg-dev \
+            fakeroot \
+            lintian
+
+      - name: Verify version metadata
+        run: |
+          version_file="$(head -n1 VERSION)"
+          changelog_version="$(dpkg-parsechangelog -S Version)"
+          upstream_version="${changelog_version%%-*}"
+
+          if [[ "$version_file" != "$upstream_version" ]]; then
+            echo "VERSION ($version_file) does not match debian/changelog upstream version ($upstream_version)." >&2
+            exit 1
+          fi
+
+      - name: Run shell syntax checks
+        run: |
+          bash -n jira2md.sh
+          bash -n confluence2md.sh
+          bash -n debian/tests/smoke
+          bash -n scripts/release-ppa.sh
+
+      - name: Build binary package
+        run: dpkg-buildpackage -us -uc -b
+
+      - name: Run lintian
+        run: |
+          version="$(dpkg-parsechangelog -S Version)"
+          lintian --fail-on error \
+            "../work2md_${version}_all.deb" \
+            "../work2md_${version}_amd64.buildinfo" \
+            "../work2md_${version}_amd64.changes"
+
+      - name: Run autopkgtest smoke tests
+        run: |
+          version="$(dpkg-parsechangelog -S Version)"
+          autopkgtest . "../work2md_${version}_all.deb" -- null
+
+      - name: Collect release artifacts
+        run: |
+          mkdir -p dist
+          version="$(dpkg-parsechangelog -S Version)"
+          cp "../work2md_${version}_all.deb" dist/
+          cp "../work2md_${version}_amd64.buildinfo" dist/
+          cp "../work2md_${version}_amd64.changes" dist/
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: work2md-packages
+          path: dist/*
+
+      - name: Publish GitHub release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
