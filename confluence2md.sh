@@ -28,15 +28,21 @@ TOOL_VERSION="$(resolve_version)"
 # - --output PATH: write to a specific file or directory
 # - --stdout: print Markdown to stdout and do not write a file
 
+print_usage() {
+  cat <<'EOF'
+Usage: confluence2md PAGE_ID_OR_URL [--output PATH] [--stdout] [--version]
+Examples:
+  confluence2md 123456789
+  confluence2md 123456789 --output ./export
+  confluence2md 123456789 --output ./export/page.md
+  confluence2md 123456789 --stdout
+  confluence2md https://company.atlassian.net/wiki/spaces/TEAM/pages/123456789/Page+Title
+  confluence2md --version
+EOF
+}
+
 usage() {
-  echo "Usage: confluence2md PAGE_ID_OR_URL [--output PATH] [--stdout] [--version]" >&2
-  echo "Examples:" >&2
-  echo "  confluence2md 123456789" >&2
-  echo "  confluence2md 123456789 --output ./export" >&2
-  echo "  confluence2md 123456789 --output ./export/page.md" >&2
-  echo "  confluence2md 123456789 --stdout" >&2
-  echo "  confluence2md https://company.atlassian.net/wiki/spaces/TEAM/pages/123456789/Page+Title" >&2
-  echo "  confluence2md --version" >&2
+  print_usage >&2
 }
 
 log() {
@@ -70,7 +76,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      usage
+      print_usage
       exit 0
       ;;
     -V|--version)
