@@ -14,3 +14,7 @@ The Debian packaging history remains in `debian/changelog`.
 - Debian and Ubuntu packaging for the `work2md` package.
 - GitHub Actions workflow for building, linting, testing, and publishing release assets.
 - Launchpad PPA release helper script and release documentation.
+
+### Changed
+
+- Jira and Confluence credentials now share a common config file at `~/.config/work2md/config`.

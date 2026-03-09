@@ -23,7 +23,7 @@ TOOL_VERSION="$(resolve_version)"
 # jira2md
 # Usage: jira2md ISSUE_KEY [--output PATH] [--stdout] [--version]
 # Exports issue -> Markdown
-# - config: ~/.config/jira2md/config
+# - config: ~/.config/work2md/config
 # - default output: ./docs/jira/ISSUE.md
 # - --output PATH: write to a specific file or directory
 # - --stdout: print Markdown to stdout and do not write a file
@@ -121,25 +121,50 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/jira2md"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/work2md"
 CONFIG_FILE="$CONFIG_DIR/config"
+LEGACY_JIRA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/jira2md/config"
+LEGACY_CONFLUENCE_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/confluence2md/config"
 
 load_config() {
+  local legacy_file
+
   if [[ -f "$CONFIG_FILE" ]]; then
     # shellcheck disable=SC1090
     source "$CONFIG_FILE"
   fi
+
+  for legacy_file in "$LEGACY_JIRA_CONFIG_FILE" "$LEGACY_CONFLUENCE_CONFIG_FILE"; do
+    if [[ -f "$legacy_file" ]]; then
+      # shellcheck disable=SC1090
+      source "$legacy_file"
+    fi
+  done
 }
 
 save_config() {
+  local jira_base jira_email jira_token
+  local confluence_base confluence_email confluence_token
+
   mkdir -p "$CONFIG_DIR"
   umask 077
   local tmp
   tmp="$(mktemp "$CONFIG_DIR/.config.XXXXXX")"
+
+  jira_base="${JIRA_BASE-}"
+  jira_email="${JIRA_EMAIL-}"
+  jira_token="${JIRA_TOKEN-}"
+  confluence_base="${CONFLUENCE_BASE-}"
+  confluence_email="${CONFLUENCE_EMAIL-}"
+  confluence_token="${CONFLUENCE_TOKEN-}"
+
   cat > "$tmp" <<EOF
-JIRA_BASE=${JIRA_BASE@Q}
-JIRA_EMAIL=${JIRA_EMAIL@Q}
-JIRA_TOKEN=${JIRA_TOKEN@Q}
+JIRA_BASE=${jira_base@Q}
+JIRA_EMAIL=${jira_email@Q}
+JIRA_TOKEN=${jira_token@Q}
+CONFLUENCE_BASE=${confluence_base@Q}
+CONFLUENCE_EMAIL=${confluence_email@Q}
+CONFLUENCE_TOKEN=${confluence_token@Q}
 EOF
   chmod 600 "$tmp"
   mv -f "$tmp" "$CONFIG_FILE"

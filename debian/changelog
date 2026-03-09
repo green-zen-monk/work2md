@@ -1,5 +1,6 @@
 work2md (0.1.0-1) noble; urgency=medium
 
   * Initial release.
+  * Use a shared work2md config file for Jira and Confluence credentials.
 
  -- Budai Krisztián (GreenZenMonk) <72669043+green-zen-monk@users.noreply.github.com>  Mon, 09 Mar 2026 00:00:00 +0000
