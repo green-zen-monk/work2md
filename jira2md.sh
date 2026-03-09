@@ -28,14 +28,20 @@ TOOL_VERSION="$(resolve_version)"
 # - --output PATH: write to a specific file or directory
 # - --stdout: print Markdown to stdout and do not write a file
 
+print_usage() {
+  cat <<'EOF'
+Usage: jira2md ISSUE_KEY [--output PATH] [--stdout] [--version]
+Examples:
+  jira2md PROJ-123
+  jira2md PROJ-123 --output ./export
+  jira2md PROJ-123 --output ./export/issue.md
+  jira2md PROJ-123 --stdout
+  jira2md --version
+EOF
+}
+
 usage() {
-  echo "Usage: jira2md ISSUE_KEY [--output PATH] [--stdout] [--version]" >&2
-  echo "Examples:" >&2
-  echo "  jira2md PROJ-123" >&2
-  echo "  jira2md PROJ-123 --output ./export" >&2
-  echo "  jira2md PROJ-123 --output ./export/issue.md" >&2
-  echo "  jira2md PROJ-123 --stdout" >&2
-  echo "  jira2md --version" >&2
+  print_usage >&2
 }
 
 log() {
@@ -69,7 +75,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      usage
+      print_usage
       exit 0
       ;;
     -V|--version)
