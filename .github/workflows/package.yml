@@ -64,7 +64,7 @@ jobs:
       - name: Run autopkgtest smoke tests
         run: |
           version="$(dpkg-parsechangelog -S Version)"
-          autopkgtest . "../work2md_${version}_all.deb" -- null
+          sudo autopkgtest . "../work2md_${version}_all.deb" -- null
 
       - name: Collect release artifacts
         run: |

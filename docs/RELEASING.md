@@ -27,7 +27,7 @@
    ```bash
    dpkg-buildpackage -us -uc -b
    lintian ../work2md_<version>_all.deb
-   autopkgtest . ../work2md_<version>_all.deb -- null
+   sudo autopkgtest . ../work2md_<version>_all.deb -- null
    ```
 
 6. Upload each Ubuntu series separately if you also publish through Launchpad PPA:
