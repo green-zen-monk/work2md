@@ -18,3 +18,7 @@ The Debian packaging history remains in `debian/changelog`.
 ### Changed
 
 - Jira and Confluence credentials now share a common config file at `~/.config/work2md/config`.
+
+### Fixed
+
+- `confluence2md` now falls back to Confluence v2 page and comment endpoints when v1 storage content is empty.

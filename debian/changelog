@@ -2,5 +2,6 @@ work2md (0.1.0-1) noble; urgency=medium
 
   * Initial release.
   * Use a shared work2md config file for Jira and Confluence credentials.
+  * Add a Confluence v2 fallback when v1 page storage content is empty.
 
  -- Zenyatta (Krisztián) <72669043+zenyatta90@users.noreply.github.com>  Mon, 09 Mar 2026 00:00:00 +0000

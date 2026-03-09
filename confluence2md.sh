@@ -744,6 +744,37 @@ api_get() {
   esac
 }
 
+api_get_optional() {
+  local url="$1"
+  local response http_code body
+
+  response="$(curl -sS -w "\n%{http_code}" \
+    -H "Authorization: Basic ${AUTH_B64}" \
+    -H "Accept: application/json" \
+    "$url")" || return 1
+
+  http_code="$(echo "$response" | tail -n1)"
+  body="$(echo "$response" | sed '$d')"
+
+  if [[ "$http_code" == "200" ]]; then
+    printf '%s\n' "$body"
+    return 0
+  fi
+
+  return 1
+}
+
+extract_body_value() {
+  jq -r '
+    .body.storage.value
+    // .body.storage
+    // .body.view.value
+    // .body.view
+    // .value
+    // ""
+  '
+}
+
 fetch_all_comments() {
   local page_id="$1"
   local start=0
@@ -774,6 +805,38 @@ fetch_all_comments() {
   done
 }
 
+fetch_v2_footer_comments() {
+  local page_id="$1"
+  local cursor=""
+  local url page_json next_relative next_url
+
+  while :; do
+    url="${CONFLUENCE_BASE}/wiki/api/v2/pages/${page_id}/footer-comments?body-format=storage&limit=100"
+    if [[ -n "$cursor" ]]; then
+      url+="&cursor=${cursor}"
+    fi
+
+    page_json="$(api_get_optional "$url")" || break
+    echo "$page_json" | jq -c '.results[]?' >> "$COMMENTS_JSONL_FILE"
+
+    next_relative="$(echo "$page_json" | jq -r '._links.next // ""')"
+    if [[ -z "$next_relative" ]]; then
+      break
+    fi
+
+    if [[ "$next_relative" =~ ^https?:// ]]; then
+      next_url="$next_relative"
+    else
+      next_url="${CONFLUENCE_BASE}${next_relative}"
+    fi
+
+    cursor="$(printf '%s\n' "$next_url" | sed -n 's/.*[?&]cursor=\([^&]*\).*/\1/p')"
+    if [[ -z "$cursor" ]]; then
+      break
+    fi
+  done
+}
+
 TMP_DIR="$(mktemp -d)"
 COMMENTS_JSONL_FILE="$TMP_DIR/comments.jsonl"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -784,6 +847,19 @@ log "Fetching Confluence page $PAGE_ID ..."
 PAGE_JSON="$(api_get "${CONFLUENCE_BASE}/wiki/rest/api/content/${PAGE_ID}?expand=body.storage,version,space,history")"
 fetch_all_comments "$PAGE_ID"
 
+storage_body="$(echo "$PAGE_JSON" | extract_body_value)"
+
+if [[ -z "$storage_body" ]]; then
+  v2_page_json="$(api_get_optional "${CONFLUENCE_BASE}/wiki/api/v2/pages/${PAGE_ID}?body-format=storage&include-version=true")" || v2_page_json=""
+  if [[ -n "$v2_page_json" ]]; then
+    storage_body="$(echo "$v2_page_json" | extract_body_value)"
+  fi
+fi
+
+if [[ ! -s "$COMMENTS_JSONL_FILE" ]]; then
+  fetch_v2_footer_comments "$PAGE_ID"
+fi
+
 title="$(echo "$PAGE_JSON" | jq -r '.title // ("Page " + (.id // "'"$PAGE_ID"'"))')"
 page_id="$(echo "$PAGE_JSON" | jq -r '.id // "'"$PAGE_ID"'"')"
 space_key="$(echo "$PAGE_JSON" | jq -r '.space.key // ""')"
@@ -792,7 +868,6 @@ created="$(echo "$PAGE_JSON" | jq -r '.history.createdDate // ""')"
 updated="$(echo "$PAGE_JSON" | jq -r '.version.when // ""')"
 created_by="$(echo "$PAGE_JSON" | jq -r '.history.createdBy.displayName // ""')"
 updated_by="$(echo "$PAGE_JSON" | jq -r '.version.by.displayName // ""')"
-storage_body="$(echo "$PAGE_JSON" | jq -r '.body.storage.value // ""')"
 
 page_url="$(echo "$PAGE_JSON" | jq -r '
   if (._links.base // "") != "" and (._links.webui // "") != "" then
@@ -821,9 +896,9 @@ if [[ -s "$COMMENTS_JSONL_FILE" ]]; then
   while IFS= read -r comment_json; do
     [[ -z "$comment_json" ]] && continue
 
-    comment_author="$(echo "$comment_json" | jq -r '.history.createdBy.displayName // .version.by.displayName // "Unknown"')"
-    comment_created="$(echo "$comment_json" | jq -r '.history.createdDate // .version.when // ""')"
-    comment_body="$(echo "$comment_json" | jq -r '.body.storage.value // ""')"
+    comment_author="$(echo "$comment_json" | jq -r '.history.createdBy.displayName // .version.by.displayName // .version.authorId // "Unknown"')"
+    comment_created="$(echo "$comment_json" | jq -r '.history.createdDate // .version.when // .version.createdAt // ""')"
+    comment_body="$(echo "$comment_json" | extract_body_value)"
     comment_md="$(printf '%s' "$comment_body" | storage_to_markdown)"
     if [[ -z "$comment_md" ]]; then
       comment_md="_No comment content exported._"
