@@ -9,7 +9,6 @@ Rules-Requires-Root: no
 Package: work2md
 Architecture: all
 Depends:
- bash,
  curl,
  jq,
  python3,

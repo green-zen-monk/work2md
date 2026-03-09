@@ -1,0 +1,30 @@
+.TH CONFLUENCE2MD 1 "March 2026" "work2md 0.1.0" "User Commands"
+.SH NAME
+confluence2md \- export Confluence pages to Markdown
+.SH SYNOPSIS
+.B confluence2md
+.I PAGE_ID_OR_URL
+[\fB\-\-output\fR \fIPATH\fR]
+[\fB\-\-stdout\fR]
+[\fB\-\-version\fR]
+.SH DESCRIPTION
+.B confluence2md
+exports a Confluence Cloud page to Markdown.
+It stores user-specific configuration in
+.I ~/.config/confluence2md/config
+and writes Markdown output to
+.I ./docs/confluence/
+by default.
+.SH OPTIONS
+.TP
+.B \-\-output PATH
+Write the generated Markdown to the given file or directory.
+.TP
+.B \-\-stdout
+Print the generated Markdown to standard output instead of writing a file.
+.TP
+.B \-h, \-\-help
+Show usage information.
+.TP
+.B \-V, \-\-version
+Show the installed version.
