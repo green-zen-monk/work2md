@@ -1,0 +1,30 @@
+.TH JIRA2MD 1 "March 2026" "work2md 0.1.0" "User Commands"
+.SH NAME
+jira2md \- export Jira issues to Markdown
+.SH SYNOPSIS
+.B jira2md
+.I ISSUE_KEY
+[\fB\-\-output\fR \fIPATH\fR]
+[\fB\-\-stdout\fR]
+[\fB\-\-version\fR]
+.SH DESCRIPTION
+.B jira2md
+exports a Jira issue to Markdown.
+It stores user-specific configuration in
+.I ~/.config/jira2md/config
+and writes Markdown output to
+.I ./docs/jira/
+by default.
+.SH OPTIONS
+.TP
+.B \-\-output PATH
+Write the generated Markdown to the given file or directory.
+.TP
+.B \-\-stdout
+Print the generated Markdown to standard output instead of writing a file.
+.TP
+.B \-h, \-\-help
+Show usage information.
+.TP
+.B \-V, \-\-version
+Show the installed version.
