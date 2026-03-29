@@ -1,0 +1,53 @@
+{
+  "fields": {
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "mediaSingle",
+          "attrs": {
+            "layout": "center",
+            "width": 760
+          },
+          "content": [
+            {
+              "type": "media",
+              "attrs": {
+                "type": "file",
+                "id": "desc-image",
+                "alt": "diagram.png"
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "media",
+              "attrs": {
+                "type": "file",
+                "id": "desc-file",
+                "fileName": "notes.txt"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "attachment": [
+      {
+        "id": "att-image",
+        "filename": "diagram.png",
+        "content": "https://example.invalid/diagram.png",
+        "mimeType": "image/png"
+      },
+      {
+        "id": "att-file",
+        "filename": "notes.txt",
+        "content": "https://example.invalid/notes.txt",
+        "mimeType": "text/plain"
+      }
+    ]
+  }
+}

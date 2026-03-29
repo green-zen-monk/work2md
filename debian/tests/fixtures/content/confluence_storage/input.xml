@@ -1,0 +1,19 @@
+<h1>Sample page</h1>
+<p>Hello <strong>world</strong> and <ac:link><ri:url ri:value="https://example.com"/><ac:plain-text-link-body>example</ac:plain-text-link-body></ac:link>.</p>
+<ac:structured-macro ac:name="info"><ac:rich-text-body><p>Heads up</p></ac:rich-text-body></ac:structured-macro>
+<ac:structured-macro ac:name="expand"><ac:parameter ac:name="title">More</ac:parameter><ac:rich-text-body><p>Hidden text</p></ac:rich-text-body></ac:structured-macro>
+<ac:task-list>
+  <ac:task><ac:task-status>complete</ac:task-status><ac:task-body>Done task</ac:task-body></ac:task>
+  <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Open task</ac:task-body></ac:task>
+</ac:task-list>
+<ac:adf-extension>
+  <ac:adf-node type="decision-list">
+    <ac:adf-node type="decision-item">
+      <ac:adf-content><p>Review PR</p></ac:adf-content>
+    </ac:adf-node>
+    <ac:adf-node type="decision-item">
+      <ac:adf-content><p>Deploy release</p></ac:adf-content>
+    </ac:adf-node>
+  </ac:adf-node>
+</ac:adf-extension>
+<table><tr><th>Col</th><th>Value</th></tr><tr><td>A</td><td>B</td></tr></table>

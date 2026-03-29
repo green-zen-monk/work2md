@@ -1,0 +1,1 @@
+{"key":"SCRUM-1","fields":{"summary":"Ship docs","status":{"name":"Done"},"issuetype":{"name":"Task"},"project":{"key":"SCRUM"},"priority":{"name":"High"},"labels":["docs","release"],"created":"2026-03-01","updated":"2026-03-02","reporter":{"displayName":"Alice"},"assignee":{"displayName":"Bob"},"description":{"type":"doc","version":1}}}

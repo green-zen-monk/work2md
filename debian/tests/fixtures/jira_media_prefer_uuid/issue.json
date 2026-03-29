@@ -1,0 +1,40 @@
+{
+  "fields": {
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "mediaSingle",
+          "attrs": {
+            "layout": "center",
+            "width": 320
+          },
+          "content": [
+            {
+              "type": "media",
+              "attrs": {
+                "type": "file",
+                "id": "desc-image",
+                "alt": "diagram.png"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "attachment": [
+      {
+        "id": "att-original",
+        "filename": "diagram.png",
+        "content": "https://example.invalid/diagram.png",
+        "mimeType": "image/png"
+      },
+      {
+        "id": "att-comment",
+        "filename": "diagram (comment-image).png",
+        "content": "https://example.invalid/diagram-comment.png",
+        "mimeType": "image/png"
+      }
+    ]
+  }
+}

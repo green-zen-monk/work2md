@@ -20,6 +20,19 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Compute release metadata
+        run: |
+          version="$(head -n1 VERSION)"
+          short_sha="${GITHUB_SHA::7}"
+          build_date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          {
+            echo "VERSION=${version}"
+            echo "SHORT_SHA=${short_sha}"
+            echo "BUILD_DATE=${build_date}"
+            echo "EDGE_VERSION=${version}+main.${short_sha}"
+          } >> "$GITHUB_ENV"
+
       - name: Install packaging dependencies
         run: |
           sudo apt-get update
@@ -47,8 +60,17 @@ jobs:
         run: |
           bash -n jira2md.sh
           bash -n confluence2md.sh
+          bash -n work2md-config
+          bash -n lib/work2md-cli.sh
+          bash -n lib/work2md-config.sh
           bash -n debian/tests/smoke
+          bash -n scripts/build-portable-release.sh
           bash -n scripts/release-ppa.sh
+
+      - name: Run Python syntax checks
+        run: |
+          python3 -m py_compile scripts/atlassian_content_to_md.py
+          python3 -m py_compile scripts/atlassian_json_helper.py
 
       - name: Build binary package
         run: dpkg-buildpackage -us -uc -b
@@ -61,7 +83,7 @@ jobs:
             "../work2md_${version}_amd64.buildinfo" \
             "../work2md_${version}_amd64.changes"
 
-      - name: Run autopkgtest smoke tests
+      - name: Run autopkgtest suite
         run: |
           version="$(dpkg-parsechangelog -S Version)"
           sudo autopkgtest . "../work2md_${version}_all.deb" -- null
@@ -70,13 +92,62 @@ jobs:
         run: |
           mkdir -p dist
           version="$(dpkg-parsechangelog -S Version)"
+          upstream_version="${version%%-*}"
+          scripts/build-portable-release.sh --output-dir dist
           cp "../work2md_${version}_all.deb" dist/
           cp "../work2md_${version}_amd64.buildinfo" dist/
           cp "../work2md_${version}_amd64.changes" dist/
           (
             cd dist
             sha256sum "work2md_${version}_all.deb" > "work2md_${version}_all.deb.sha256"
+            sha256sum "work2md_${upstream_version}_portable.tar.gz" > "work2md_${upstream_version}_portable.tar.gz.sha256"
           )
+
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            cp "dist/work2md_${version}_all.deb" "dist/work2md_${EDGE_VERSION}_all.deb"
+            cp "dist/work2md_${upstream_version}_portable.tar.gz" "dist/work2md_${EDGE_VERSION}_portable.tar.gz"
+            (
+              cd dist
+              sha256sum "work2md_${EDGE_VERSION}_all.deb" > "work2md_${EDGE_VERSION}_all.deb.sha256"
+              sha256sum "work2md_${EDGE_VERSION}_portable.tar.gz" > "work2md_${EDGE_VERSION}_portable.tar.gz.sha256"
+            )
+          fi
+
+      - name: Verify Homebrew formula metadata
+        run: |
+          version="$(head -n1 VERSION)"
+          formula_version="$(sed -n 's/^  version \"\\([0-9][^\"]*\\)\"$/\\1/p' Formula/work2md.rb)"
+          formula_sha="$(sed -n 's/^  sha256 \"\\([0-9a-f]\\{64\\}\\)\"$/\\1/p' Formula/work2md.rb)"
+          archive_sha="$(sha256sum "dist/work2md_${version}_portable.tar.gz" | awk '{print $1}')"
+
+          if [[ "$formula_version" != "$version" ]]; then
+            echo "Formula version (${formula_version}) does not match VERSION (${version})." >&2
+            exit 1
+          fi
+
+          if [[ "$formula_sha" != "$archive_sha" ]]; then
+            echo "Formula SHA (${formula_sha}) does not match portable archive SHA (${archive_sha})." >&2
+            exit 1
+          fi
+
+      - name: Smoke test portable release bundle
+        run: |
+          version="$(head -n1 VERSION)"
+          bundle_dir="$(mktemp -d)"
+          trap 'rm -rf "$bundle_dir"' EXIT
+          tar -xzf "dist/work2md_${version}_portable.tar.gz" -C "$bundle_dir"
+          bundle_root="$bundle_dir/work2md-${version}"
+
+          "$bundle_root/jira2md" --version | grep -Fx "jira2md ${version}"
+          "$bundle_root/confluence2md" --version | grep -Fx "confluence2md ${version}"
+          "$bundle_root/work2md-config" --version | grep -Fx "work2md-config ${version}"
+          test -f "$bundle_root/lib/work2md-cli.sh"
+          test -f "$bundle_root/lib/work2md-config.sh"
+          test -f "$bundle_root/scripts/atlassian_content_to_md.py"
+          test -f "$bundle_root/scripts/atlassian_json_helper.py"
+          test -f "$bundle_root/scripts/confluence_attachment_helper.py"
+          test -f "$bundle_root/scripts/jira_media_helper.py"
+          test -f "$bundle_root/scripts/work2md_export_helper.py"
 
       - name: Prepare GitHub release notes
         if: startsWith(github.ref, 'refs/tags/v')
@@ -116,12 +187,57 @@ jobs:
 
           - \`jira2md\`
           - \`confluence2md\`
+          - \`work2md-config\`
 
           Verify the package checksum with:
 
           \`\`\`bash
           sha256sum -c work2md_${version}_all.deb.sha256
           \`\`\`
+
+          ## Install with Homebrew on Linux
+
+          \`\`\`bash
+          brew tap green-zen-monk/work2md https://github.com/green-zen-monk/work2md
+          brew install work2md
+          \`\`\`
+
+          ## Install on Linux from the portable archive
+
+          \`\`\`bash
+          tar -xzf work2md_${upstream_version}_portable.tar.gz
+          cd work2md-${upstream_version}
+          export PATH="$PWD:\$PATH"
+          \`\`\`
+
+          Runtime dependencies for the portable bundle:
+
+          - \`bash\`
+          - \`curl\`
+          - \`python3\`
+
+          Verify the portable bundle checksum with:
+
+          \`\`\`bash
+          sha256sum -c work2md_${upstream_version}_portable.tar.gz.sha256
+          \`\`\`
+          EOF
+
+      - name: Prepare edge release notes
+        if: github.ref == 'refs/heads/main'
+        run: |
+          release_notes_file="${RUNNER_TEMP}/work2md-edge-release-notes.md"
+
+          cat > "$release_notes_file" <<EOF
+          Rolling prerelease built from \`main\`.
+
+          - Release line: \`${VERSION}\`
+          - Edge artifact version: \`${EDGE_VERSION}\`
+          - Commit: \`${GITHUB_SHA}\`
+          - Build date: \`${BUILD_DATE}\`
+
+          Installable assets in this prerelease are rebuilt on each successful push to \`main\`.
+          Stable GitHub Releases continue to be published only from version tags matching \`v*\`.
           EOF
 
       - name: Upload workflow artifacts
@@ -130,10 +246,32 @@ jobs:
           name: work2md-release-assets
           path: dist/*
 
-      - name: Publish GitHub release assets
+      - name: Update rolling edge tag
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git tag -f edge "$GITHUB_SHA"
+          git push origin refs/tags/edge --force
+
+      - name: Publish GitHub stable release assets
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           name: work2md ${{ github.ref_name }}
           body_path: ${{ runner.temp }}/work2md-release-notes.md
           files: dist/*
+
+      - name: Publish GitHub edge prerelease assets
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: edge
+          target_commitish: ${{ github.sha }}
+          name: work2md edge
+          body_path: ${{ runner.temp }}/work2md-edge-release-notes.md
+          prerelease: true
+          overwrite_files: true
+          files: |
+            dist/work2md_${{ env.EDGE_VERSION }}_all.deb
+            dist/work2md_${{ env.EDGE_VERSION }}_all.deb.sha256
+            dist/work2md_${{ env.EDGE_VERSION }}_portable.tar.gz
+            dist/work2md_${{ env.EDGE_VERSION }}_portable.tar.gz.sha256

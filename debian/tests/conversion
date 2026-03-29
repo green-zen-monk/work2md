@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+REPO_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)"
+FIXTURES_DIR="$SCRIPT_DIR/fixtures"
+CONTENT_RENDERER="$REPO_ROOT/scripts/atlassian_content_to_md.py"
+JSON_HELPER="$REPO_ROOT/scripts/atlassian_json_helper.py"
+JIRA_MEDIA_HELPER="$REPO_ROOT/scripts/jira_media_helper.py"
+CONFLUENCE_ATTACHMENT_HELPER="$REPO_ROOT/scripts/confluence_attachment_helper.py"
+EXPORT_HELPER="$REPO_ROOT/scripts/work2md_export_helper.py"
+TMPDIR="$(mktemp -d /tmp/work2md-conversion-test.XXXXXX)"
+
+cleanup() {
+  rm -rf "$TMPDIR"
+}
+trap cleanup EXIT
+
+compare_files() {
+  local label="$1"
+  local expected="$2"
+  local actual="$3"
+
+  python3 - "$label" "$expected" "$actual" <<'PY'
+import difflib
+import pathlib
+import sys
+
+label, expected_path, actual_path = sys.argv[1:]
+expected = pathlib.Path(expected_path).read_text(encoding="utf-8")
+actual = pathlib.Path(actual_path).read_text(encoding="utf-8")
+
+if expected.endswith("\n"):
+    expected = expected[:-1]
+if actual.endswith("\n"):
+    actual = actual[:-1]
+
+if expected != actual:
+    diff = "".join(
+        difflib.unified_diff(
+            [line + "\n" for line in expected.splitlines()],
+            [line + "\n" for line in actual.splitlines()],
+            fromfile=expected_path,
+            tofile=actual_path,
+        )
+    )
+    sys.stderr.write(f"Fixture mismatch for {label}\n{diff}")
+    raise SystemExit(1)
+PY
+}
+
+run_fixture() {
+  local label="$1"
+  local expected="$2"
+  local input="$3"
+  shift 3
+
+  local output="$TMPDIR/${label//\//_}.out"
+  "$@" < "$input" > "$output"
+  compare_files "$label" "$expected" "$output"
+}
+
+run_fixture \
+  "confluence-storage-default" \
+  "$FIXTURES_DIR/content/confluence_storage/expected-default.md" \
+  "$FIXTURES_DIR/content/confluence_storage/input.xml" \
+  python3 "$CONTENT_RENDERER" --format confluence-storage
+
+run_fixture \
+  "confluence-storage-ai-friendly" \
+  "$FIXTURES_DIR/content/confluence_storage/expected-ai-friendly.md" \
+  "$FIXTURES_DIR/content/confluence_storage/input.xml" \
+  python3 "$CONTENT_RENDERER" --format confluence-storage --profile ai-friendly
+
+run_fixture \
+  "jira-adf-default" \
+  "$FIXTURES_DIR/content/jira_adf/expected-default.md" \
+  "$FIXTURES_DIR/content/jira_adf/input.json" \
+  python3 "$CONTENT_RENDERER" --format jira-adf
+
+run_fixture \
+  "jira-adf-ai-friendly" \
+  "$FIXTURES_DIR/content/jira_adf/expected-ai-friendly.md" \
+  "$FIXTURES_DIR/content/jira_adf/input.json" \
+  python3 "$CONTENT_RENDERER" --format jira-adf --profile ai-friendly
+
+run_fixture \
+  "json-helper-body-value" \
+  "$FIXTURES_DIR/json_helper/body_value/expected.txt" \
+  "$FIXTURES_DIR/json_helper/body_value/input.json" \
+  python3 "$JSON_HELPER" body-value
+
+run_fixture \
+  "json-helper-jira-issue-meta" \
+  "$FIXTURES_DIR/json_helper/jira_issue_meta/expected.txt" \
+  "$FIXTURES_DIR/json_helper/jira_issue_meta/input.json" \
+  python3 "$JSON_HELPER" jira-issue-meta --default-issue TEST-1
+
+run_fixture \
+  "json-helper-confluence-page-meta" \
+  "$FIXTURES_DIR/json_helper/confluence_page_meta/expected.txt" \
+  "$FIXTURES_DIR/json_helper/confluence_page_meta/input.json" \
+  python3 "$JSON_HELPER" confluence-page-meta --default-page-id 557070
+
+run_fixture \
+  "json-helper-file-map-get" \
+  "$FIXTURES_DIR/json_helper/file_map_get/expected.txt" \
+  /dev/null \
+  python3 "$JSON_HELPER" file-map-get --file "$FIXTURES_DIR/json_helper/file_map_get/input.json" --path attachments --key manual.pdf --field path
+
+run_fixture \
+  "jira-media-map" \
+  "$FIXTURES_DIR/jira_media/expected-map.json" \
+  /dev/null \
+  python3 "$JIRA_MEDIA_HELPER" extract-map --issue-file "$FIXTURES_DIR/jira_media/issue.json" --comments-file "$FIXTURES_DIR/jira_media/comments.jsonl"
+
+run_fixture \
+  "jira-media-rewrite" \
+  "$FIXTURES_DIR/jira_media/expected.md" \
+  "$FIXTURES_DIR/jira_media/input.md" \
+  python3 "$JIRA_MEDIA_HELPER" rewrite-markdown --mapping-file "$FIXTURES_DIR/jira_media/rewrite-map.json"
+
+run_fixture \
+  "jira-media-unlabeled-map" \
+  "$FIXTURES_DIR/jira_media_unlabeled/expected-map.json" \
+  /dev/null \
+  python3 "$JIRA_MEDIA_HELPER" extract-map --issue-file "$FIXTURES_DIR/jira_media_unlabeled/issue.json" --comments-file "$FIXTURES_DIR/jira_media_unlabeled/comments.jsonl"
+
+run_fixture \
+  "jira-media-unlabeled-rewrite" \
+  "$FIXTURES_DIR/jira_media_unlabeled/expected.md" \
+  "$FIXTURES_DIR/jira_media_unlabeled/input.md" \
+  python3 "$JIRA_MEDIA_HELPER" rewrite-markdown --mapping-file "$FIXTURES_DIR/jira_media_unlabeled/rewrite-map.json"
+
+run_fixture \
+  "jira-media-uuid-filename-map" \
+  "$FIXTURES_DIR/jira_media_uuid_filename/expected-map.json" \
+  /dev/null \
+  python3 "$JIRA_MEDIA_HELPER" extract-map --issue-file "$FIXTURES_DIR/jira_media_uuid_filename/issue.json" --comments-file "$FIXTURES_DIR/jira_media_uuid_filename/comments.jsonl"
+
+run_fixture \
+  "jira-media-prefer-uuid-map" \
+  "$FIXTURES_DIR/jira_media_prefer_uuid/expected-map.json" \
+  /dev/null \
+  python3 "$JIRA_MEDIA_HELPER" extract-map --issue-file "$FIXTURES_DIR/jira_media_prefer_uuid/issue.json" --comments-file "$FIXTURES_DIR/jira_media_prefer_uuid/comments.jsonl"
+
+run_fixture \
+  "confluence-attachments-map" \
+  "$FIXTURES_DIR/confluence_attachments/expected-map.json" \
+  /dev/null \
+  python3 "$CONFLUENCE_ATTACHMENT_HELPER" extract-map --page-file "$FIXTURES_DIR/confluence_attachments/page.json" --comments-file "$FIXTURES_DIR/confluence_attachments/comments.jsonl" --page-id 123 --link-base "https://example.atlassian.net/wiki"
+
+run_fixture \
+  "confluence-attachments-rewrite-map" \
+  "$FIXTURES_DIR/confluence_attachments/expected-rewrite-map.json" \
+  /dev/null \
+  python3 "$CONFLUENCE_ATTACHMENT_HELPER" build-rewrite-map --mapping-file "$FIXTURES_DIR/confluence_attachments/expected-map.json" --asset-prefix assets
+
+run_fixture \
+  "export-helper-filter-metadata" \
+  "$FIXTURES_DIR/export_helper/filter_metadata/expected.md" \
+  "$FIXTURES_DIR/export_helper/filter_metadata/input.md" \
+  python3 "$EXPORT_HELPER" filter-metadata-markdown --drop-field url --drop-field reporter
+
+run_fixture \
+  "export-helper-front-matter" \
+  "$FIXTURES_DIR/export_helper/front_matter/expected.md" \
+  "$FIXTURES_DIR/export_helper/front_matter/input.md" \
+  python3 "$EXPORT_HELPER" markdown-metadata-to-front-matter
+
+run_fixture \
+  "export-helper-redact-text" \
+  "$FIXTURES_DIR/export_helper/redact_text/expected.md" \
+  "$FIXTURES_DIR/export_helper/redact_text/input.md" \
+  python3 "$EXPORT_HELPER" redact-text --rule email --rule account-id --rule internal-url --base-url https://company.atlassian.net

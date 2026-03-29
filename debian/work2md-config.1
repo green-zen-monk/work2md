@@ -1,0 +1,111 @@
+.TH WORK2MD-CONFIG 1 "March 2026" "work2md 0.9.0" "User Commands"
+.SH NAME
+work2md-config \- manage shared work2md credentials and validation
+.SH SYNOPSIS
+.B work2md-config
+.I init
+.br
+.B work2md-config
+.I show
+.br
+.B work2md-config
+.I validate
+.br
+.B work2md-config
+.I doctor
+.br
+.B work2md-config
+.I path
+.br
+.B work2md-config
+.RB [ --log-format " text|json ]"
+.I jira
+.BR init " | " show " | " validate " | " doctor
+.br
+.B work2md-config
+.I jira
+.B set
+.I base|email|token|token-expiry|token-backend VALUE
+.br
+.B work2md-config
+.RB [ --log-format " text|json ]"
+.I confluence
+.BR init " | " show " | " validate " | " doctor
+.br
+.B work2md-config
+.I confluence
+.B set
+.I base|email|token|token-expiry|token-backend VALUE
+.br
+.B work2md-config
+[\fB\-\-version\fR]
+.SH DESCRIPTION
+.B work2md-config
+manages the shared configuration used by
+.BR jira2md (1)
+and
+.BR confluence2md (1).
+The default configuration file is
+.IR ~/.config/work2md/config .
+Its containing directory is kept at mode 700 and the config file at mode 600.
+Existing configs with broader permissions are tightened automatically before
+they are read or written.
+Per-service token storage can be configured as either
+.B config
+or
+.B keyring
+using the
+.B token-backend
+setting.
+The
+.B keyring
+backend uses the supported Linux keyring provider through
+.B secret-tool
+from the
+.B libsecret-tools
+package.
+API tokens may also be supplied through the
+.B WORK2MD_JIRA_TOKEN
+and
+.B WORK2MD_CONFLUENCE_TOKEN
+environment variables so they do not need to be stored in the config file.
+When set, those variables override the stored tokens at runtime and provide the
+recommended fallback when no supported keyring backend is available.
+.SH COMMANDS
+.TP
+.B init
+Interactively initialize both Jira and Confluence settings.
+.TP
+.B show
+Print the current configuration with secrets masked.
+.TP
+.B validate
+Validate the configured values and perform live API checks when possible.
+.TP
+.B doctor
+Run a more detailed diagnostic that checks base URLs, auth fields, keyring
+availability, token expiry, and a short authenticated API probe.
+.TP
+.B path
+Print the path to the active configuration file.
+.TP
+.BI "jira init, jira show, jira validate, jira doctor"
+Manage or inspect only the Jira configuration.
+.TP
+.BI "jira set " "base|email|token|token-expiry|token-backend VALUE"
+Set one Jira configuration field.
+.TP
+.BI "confluence init, confluence show, confluence validate, confluence doctor"
+Manage or inspect only the Confluence configuration.
+.TP
+.BI "confluence set " "base|email|token|token-expiry|token-backend VALUE"
+Set one Confluence configuration field.
+.TP
+.B \-h, \-\-help
+Show usage information.
+.TP
+.B \-V, \-\-version
+Show the installed version.
+.TP
+.BI "\-\-log-format " "text|json"
+Select plain text or JSON formatted log output on stderr.

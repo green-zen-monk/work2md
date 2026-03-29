@@ -7,8 +7,18 @@ run_as_test_user() {
 
 run_as_test_user "jira2md --help >/dev/null"
 run_as_test_user "confluence2md --help >/dev/null"
+run_as_test_user "work2md-config --help >/dev/null"
+run_as_test_user "work2md-config --log-format json --help >/dev/null"
 run_as_test_user "jira2md --version >/dev/null"
 run_as_test_user "confluence2md --version >/dev/null"
+run_as_test_user "work2md-config --version >/dev/null"
+run_as_test_user "work2md-config --log-format json --version >/dev/null"
+run_as_test_user "work2md-config path >/dev/null"
+run_as_test_user "tmpdir=\$(mktemp -d /tmp/work2md-config-show.XXXXXX) && XDG_CONFIG_HOME=\$tmpdir work2md-config --log-format json show >/dev/null"
+run_as_test_user "tmpdir=\$(mktemp -d /tmp/work2md-config-invalid.XXXXXX) && touch \"\$tmpdir/work2md\" && XDG_CONFIG_HOME=\$tmpdir work2md-config --version >/dev/null && XDG_CONFIG_HOME=\$tmpdir work2md-config path >/dev/null"
+run_as_test_user "tmpdir=\$(mktemp -d /tmp/work2md-config-test.XXXXXX) && XDG_CONFIG_HOME=\$tmpdir work2md-config jira set token test-token >/dev/null 2>/dev/null && test \"\$(stat -c %a \"\$tmpdir/work2md\")\" = 700 && test \"\$(stat -c %a \"\$tmpdir/work2md/config\")\" = 600"
+run_as_test_user "tmpdir=\$(mktemp -d /tmp/work2md-config-backend.XXXXXX) && XDG_CONFIG_HOME=\$tmpdir work2md-config jira set token-backend keyring >/dev/null 2>/dev/null && grep -Eq '^JIRA_TOKEN_BACKEND=(\"|\\047)?keyring((\"|\\047)|)$' \"\$tmpdir/work2md/config\""
+run_as_test_user "tmpdir=\$(mktemp -d /tmp/work2md-config-env.XXXXXX) && XDG_CONFIG_HOME=\$tmpdir WORK2MD_JIRA_TOKEN=env-secret work2md-config jira set email you@example.com >/dev/null 2>/dev/null && ! grep -Fq env-secret \"\$tmpdir/work2md/config\" && XDG_CONFIG_HOME=\$tmpdir WORK2MD_JIRA_TOKEN=env-secret work2md-config jira show | grep -Fq 'environment variable WORK2MD_JIRA_TOKEN'"
 
 jira_root_output="$(jira2md TEST-1 --stdout 2>&1 || true)"
 if ! grep -Fq "Do not run this script with sudo/root." <<<"$jira_root_output"; then

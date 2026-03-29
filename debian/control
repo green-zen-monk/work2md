@@ -10,9 +10,10 @@ Package: work2md
 Architecture: all
 Depends:
  curl,
- jq,
  python3,
  ${misc:Depends}
+Suggests:
+ libsecret-tools
 Description: Atlassian Jira and Confluence export CLIs
  Export Jira issues and Confluence Cloud pages to Markdown from the command
- line.
+ line, and manage shared credentials with work2md-config.

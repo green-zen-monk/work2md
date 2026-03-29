@@ -1,0 +1,10 @@
+title='Release notes'
+page_id=557070
+space_key=OPS
+version_number=7
+created=2026-03-01T10:00:00.000Z
+updated=2026-03-02T11:30:00.000Z
+created_by='Alice Example'
+updated_by='Bob Example'
+confluence_link_base=https://example.atlassian.net/wiki
+page_url=https://example.atlassian.net/wiki/spaces/OPS/pages/557070/Release+notes

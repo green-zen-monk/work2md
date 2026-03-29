@@ -1,0 +1,12 @@
+summary='Ship docs'
+key=SCRUM-1
+status=Done
+issuetype=Task
+project=SCRUM
+priority=High
+labels='docs, release'
+created=2026-03-01
+updated=2026-03-02
+reporter=Alice
+assignee=Bob
+description_json='{"type":"doc","version":1}'

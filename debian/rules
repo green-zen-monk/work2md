@@ -6,3 +6,11 @@
 override_dh_auto_install:
 	install -Dm755 jira2md.sh debian/work2md/usr/bin/jira2md
 	install -Dm755 confluence2md.sh debian/work2md/usr/bin/confluence2md
+	install -Dm755 work2md-config debian/work2md/usr/bin/work2md-config
+	install -Dm644 lib/work2md-cli.sh debian/work2md/usr/share/work2md/lib/work2md-cli.sh
+	install -Dm644 lib/work2md-config.sh debian/work2md/usr/share/work2md/lib/work2md-config.sh
+	install -Dm644 scripts/atlassian_content_to_md.py debian/work2md/usr/share/work2md/scripts/atlassian_content_to_md.py
+	install -Dm644 scripts/atlassian_json_helper.py debian/work2md/usr/share/work2md/scripts/atlassian_json_helper.py
+	install -Dm644 scripts/confluence_attachment_helper.py debian/work2md/usr/share/work2md/scripts/confluence_attachment_helper.py
+	install -Dm644 scripts/jira_media_helper.py debian/work2md/usr/share/work2md/scripts/jira_media_helper.py
+	install -Dm644 scripts/work2md_export_helper.py debian/work2md/usr/share/work2md/scripts/work2md_export_helper.py

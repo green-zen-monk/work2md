@@ -1,0 +1,13 @@
+{
+  "body": {
+    "storage": {
+      "value": "<p><ac:structured-macro ac:name=\"view-file\"><ac:parameter ac:name=\"name\"><ri:attachment ri:filename=\"manual.pdf\" /></ac:parameter></ac:structured-macro></p>"
+    },
+    "export_view": {
+      "value": "<p>Image one</p><img alt=\"left.png\" src=\"https://example.atlassian.net/wiki/download/attachments/123/left.png?api=v2\" /><p>Image two</p><img alt=\"center.png\" src=\"https://example.atlassian.net/wiki/download/attachments/123/center.png?api=v2\" />"
+    },
+    "view": {
+      "value": "<img alt=\"unknown.png\" src=\"https://example.atlassian.net/wiki/plugins/servlet/confluence/placeholder/unknown-attachment?locale=en_US&amp;version=2\" />"
+    }
+  }
+}

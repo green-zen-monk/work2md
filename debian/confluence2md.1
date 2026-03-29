@@ -1,11 +1,20 @@
-.TH CONFLUENCE2MD 1 "March 2026" "work2md 0.1.0" "User Commands"
+.TH CONFLUENCE2MD 1 "March 2026" "work2md 0.9.0" "User Commands"
 .SH NAME
 confluence2md \- export Confluence pages to Markdown
 .SH SYNOPSIS
 .B confluence2md
 .I PAGE_ID_OR_URL
-[\fB\-\-output\fR \fIPATH\fR]
+[\fB\-\-output-dir\fR \fIPATH\fR]
 [\fB\-\-stdout\fR]
+[\fB\-\-emit\fR \fITARGET\fR]
+[\fB\-\-ai-friendly\fR]
+[\fB\-\-front-matter\fR]
+[\fB\-\-redact\fR \fIRULES\fR]
+[\fB\-\-drop-field\fR \fIFIELDS\fR]
+[\fB\-\-incremental\fR]
+[\fB\-\-log-format\fR \fITEXT_OR_JSON\fR]
+[\fB\-\-input-file\fR \fIPATH\fR]
+[\fB\-\-cql\fR \fIQUERY\fR]
 [\fB\-\-version\fR]
 .SH DESCRIPTION
 .B confluence2md
@@ -17,11 +26,51 @@ and writes Markdown output to
 by default.
 .SH OPTIONS
 .TP
-.B \-\-output PATH
-Write the generated Markdown to the given file or directory.
+.B \-\-output-dir PATH
+Write the generated output bundle to the given directory.
 .TP
 .B \-\-stdout
-Print the generated Markdown to standard output instead of writing a file.
+Print one generated artifact to standard output instead of writing files.
+.TP
+.B \-\-emit TARGET
+Select the stdout artifact to print. Supported values are
+.BR index ,
+.BR metadata ,
+and
+.BR comments .
+.TP
+.B \-\-ai-friendly
+Create an additional AI-friendly export variant with a linearized content layout.
+.TP
+.B \-\-front-matter
+Prepend YAML front matter to the generated
+.IR index.md .
+.TP
+.BI "\-\-redact " RULES
+Redact one or more comma-separated classes such as
+.BR email ,
+.BR account-id ,
+or
+.BR internal-url .
+.TP
+.BI "\-\-drop-field " FIELDS
+Remove one or more comma-separated metadata fields before writing
+.I metadata.md
+and generated front matter.
+.TP
+.B \-\-incremental
+Consult and update
+.I manifest.json
+so unchanged export bundles can be skipped on later runs.
+.TP
+.BI "\-\-log-format " text|json
+Select plain text or JSON formatted log output on stderr.
+.TP
+.BI "\-\-input-file " PATH
+Read page IDs or Confluence page URLs from a file and export them in sequence.
+.TP
+.BI "\-\-cql " QUERY
+Resolve a Confluence page list from a CQL query and export the matching pages.
 .TP
 .B \-h, \-\-help
 Show usage information.

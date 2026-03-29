@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+DEFAULT_VERSION="0.9.0"
+
+resolve_work2md_share_dir() {
+  local candidate
+
+  for candidate in \
+    "$SCRIPT_DIR" \
+    "$SCRIPT_DIR/.." \
+    "$SCRIPT_DIR/../share/work2md" \
+    "/usr/share/work2md"
+  do
+    if [[ -f "$candidate/lib/work2md-config.sh" ]]; then
+      (cd "$candidate" && pwd -P)
+      return 0
+    fi
+  done
+
+  echo "Unable to locate work2md shared files." >&2
+  exit 1
+}
+
+WORK2MD_SHARE_DIR="$(resolve_work2md_share_dir)"
+PACKAGE_VERSION_FILE="$WORK2MD_SHARE_DIR/VERSION"
+
+resolve_version() {
+  local candidate
+
+  for candidate in \
+    "$SCRIPT_DIR/VERSION" \
+    "$SCRIPT_DIR/../share/work2md/VERSION" \
+    "$PACKAGE_VERSION_FILE" \
+    "/usr/share/work2md/VERSION"
+  do
+    if [[ -f "$candidate" ]]; then
+      head -n1 "$candidate"
+      return 0
+    fi
+  done
+
+  printf '%s\n' "$DEFAULT_VERSION"
+}
+
+TOOL_VERSION="$(resolve_version)"
+
+# shellcheck source=lib/work2md-config.sh
+source "$WORK2MD_SHARE_DIR/lib/work2md-config.sh"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  work2md-config [--log-format text|json] init
+  work2md-config [--log-format text|json] show
+  work2md-config [--log-format text|json] validate
+  work2md-config [--log-format text|json] doctor
+  work2md-config [--log-format text|json] path
+  work2md-config [--log-format text|json] jira init|show|validate|doctor
+  work2md-config jira set base|email|token|token-expiry|token-backend VALUE
+  work2md-config [--log-format text|json] confluence init|show|validate|doctor
+  work2md-config confluence set base|email|token|token-expiry|token-backend VALUE
+  work2md-config --version
+EOF
+}
+
+show_all() {
+  work2md_show_service_config jira
+  echo ""
+  work2md_show_service_config confluence
+}
+
+validate_all() {
+  local status=0
+  work2md_validate_service_config jira || status=$?
+  work2md_validate_service_config confluence || status=$?
+  if [[ "$status" -eq 0 ]]; then
+    work2md_success "Configuration validation completed successfully."
+  fi
+  return "$status"
+}
+
+doctor_all() {
+  local status=0
+  work2md_doctor_service_config jira || status=$?
+  echo ""
+  work2md_doctor_service_config confluence || status=$?
+  if [[ "$status" -eq 0 ]]; then
+    work2md_success "Configuration diagnostics completed successfully."
+  fi
+  return "$status"
+}
+
+ensure_valid_field() {
+  local field="$1"
+  case "$field" in
+    base|email|token|token-expiry|token-backend) ;;
+    *)
+      work2md_error "Unsupported field: $field"
+      exit 1
+      ;;
+  esac
+}
+
+run_service_command() {
+  local service="$1"
+  local action="${2:-}"
+
+  case "$action" in
+    init)
+      work2md_init_service_config "$service"
+      work2md_save_config
+      work2md_success "Saved ${service} configuration to: $WORK2MD_CONFIG_FILE"
+      ;;
+    show)
+      work2md_show_service_config "$service"
+      ;;
+    validate)
+      work2md_validate_service_config "$service"
+      ;;
+    doctor)
+      work2md_doctor_service_config "$service"
+      ;;
+    set)
+      local field="${3:-}"
+      local value="${4:-}"
+      ensure_valid_field "$field"
+      if [[ -z "$value" ]]; then
+        work2md_error "Missing value for ${service} ${field}."
+        exit 1
+      fi
+      work2md_set_service_value "$service" "$field" "$value"
+      work2md_save_config
+      work2md_success "Saved ${service} configuration to: $WORK2MD_CONFIG_FILE"
+      ;;
+    *)
+      usage >&2
+      exit 1
+      ;;
+  esac
+}
+
+LOG_FORMAT="text"
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --log-format)
+      if [[ $# -lt 2 ]]; then
+        work2md_error "Missing value for --log-format."
+        exit 1
+      fi
+      LOG_FORMAT="$2"
+      shift 2
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+set -- "${POSITIONAL[@]}"
+
+work2md_set_log_format "$LOG_FORMAT"
+
+case "${1:-}" in
+  ""|-h|--help)
+    usage
+    ;;
+  -V|--version)
+    printf 'work2md-config %s\n' "$TOOL_VERSION"
+    ;;
+  path)
+    printf '%s\n' "$WORK2MD_CONFIG_FILE"
+    ;;
+  *)
+    work2md_load_config
+    case "$1" in
+      init)
+        work2md_init_service_config jira
+        work2md_init_service_config confluence
+        work2md_save_config
+        work2md_success "Saved configuration to: $WORK2MD_CONFIG_FILE"
+        ;;
+      show)
+        show_all
+        ;;
+      validate)
+        validate_all
+        ;;
+      doctor)
+        doctor_all
+        ;;
+      jira)
+        run_service_command jira "${2:-}" "${3:-}" "${4:-}"
+        ;;
+      confluence)
+        run_service_command confluence "${2:-}" "${3:-}" "${4:-}"
+        ;;
+      *)
+        usage >&2
+        work2md_error "Unknown command."
+        exit 1
+        ;;
+    esac
+    ;;
+esac

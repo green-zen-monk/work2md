@@ -1,0 +1,35 @@
+{
+  "fields": {
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "media",
+              "attrs": {
+                "type": "file",
+                "id": "desc-file"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "attachment": [
+      {
+        "id": "att-original",
+        "filename": "teszt-fajl.pdf",
+        "content": "https://example.invalid/teszt-fajl.pdf",
+        "mimeType": "application/pdf"
+      },
+      {
+        "id": "att-comment",
+        "filename": "teszt-fajl (comment-file).pdf",
+        "content": "https://example.invalid/teszt-fajl-comment.pdf",
+        "mimeType": "application/pdf"
+      }
+    ]
+  }
+}

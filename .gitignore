@@ -1,0 +1,11 @@
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/work2md/
+debian/work2md.substvars
+__pycache__/
+*.py[cod]
+scripts/__pycache__/
+.codex
+dev/
+dist/

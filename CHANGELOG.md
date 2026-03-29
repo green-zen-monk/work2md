@@ -5,20 +5,23 @@ All notable project-level changes for `work2md` are documented in this file.
 This changelog is used for GitHub Releases.
 The Debian packaging history remains in `debian/changelog`.
 
-## [0.1.0] - 2026-03-10
+## [Unreleased]
+
+## [0.9.0] - 2026-03-29
 
 ### Added
 
-- `jira2md` CLI for exporting Jira issues to Markdown.
-- `confluence2md` CLI for exporting Confluence Cloud pages to Markdown.
-- Debian and Ubuntu packaging for the `work2md` package.
-- GitHub Actions workflow for building, linting, testing, and publishing release assets.
-- Launchpad PPA release helper script and release documentation.
+- First official public release of `work2md`.
+- Add `jira2md` and `confluence2md` for exporting Jira issues and Confluence Cloud pages to Markdown bundles with metadata, comments, and downloaded attachments.
+- Add `work2md-config` for shared credential setup, validation, diagnostics, and token backend management.
+- Add AI-friendly exports, YAML front matter, redaction and metadata filtering, batch input modes, and manifest-driven incremental exports.
+- Add Debian packages, Linux portable `tar.gz` bundles, and Homebrew on Linux as supported distribution paths.
 
 ### Changed
 
-- Jira and Confluence credentials now share a common config file at `~/.config/work2md/config`.
+- Establish the `0.9.x` line as the first official pre-`1.0` release series for the project.
+- Standardize the release flow so GitHub Release notes are sourced from this changelog.
 
 ### Fixed
 
-- `confluence2md` now falls back to Confluence v2 page and comment endpoints when v1 storage content is empty.
+- Improve Confluence export compatibility by falling back to alternate page and comment endpoints when storage content is unavailable from the primary API response.

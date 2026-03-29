@@ -1,7 +1,11 @@
-work2md (0.1.0-1) noble; urgency=medium
+work2md (0.9.0-1) noble; urgency=medium
 
-  * Initial release.
-  * Use a shared work2md config file for Jira and Confluence credentials.
-  * Add a Confluence v2 fallback when v1 page storage content is empty.
+  * First official public pre-1.0 release.
+  * Add jira2md and confluence2md Markdown bundle exporters with
+    metadata, comments, and attachment download support.
+  * Add shared work2md-config credential management with validation,
+    diagnostics, and token backend support.
+  * Add AI-friendly, shaping, batch, and incremental export workflows.
+  * Publish Debian, portable tar.gz, and Homebrew release artifacts.
 
- -- Budai Krisztián (GreenZenMonk) <72669043+green-zen-monk@users.noreply.github.com>  Mon, 09 Mar 2026 00:00:00 +0000
+ -- Budai Krisztián (GreenZenMonk) <72669043+green-zen-monk@users.noreply.github.com>  Sun, 29 Mar 2026 13:41:41 +0200

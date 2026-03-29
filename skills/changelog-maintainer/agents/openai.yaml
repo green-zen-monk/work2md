@@ -1,0 +1,4 @@
+interface:
+  display_name: "Changelog Maintainer"
+  short_description: "Keep Debian and project changelogs aligned"
+  default_prompt: "Use $changelog-maintainer to update debian/changelog and CHANGELOG.md for the next release. Read both changelogs first, preserve the repo maintainer identity, and keep Unreleased in sync."

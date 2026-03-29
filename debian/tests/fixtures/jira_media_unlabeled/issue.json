@@ -1,0 +1,29 @@
+{
+  "fields": {
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "media",
+              "attrs": {
+                "type": "file",
+                "id": "desc-file"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "attachment": [
+      {
+        "id": "att-file",
+        "filename": "teszt-fajl.pdf",
+        "content": "https://example.invalid/teszt-fajl.pdf",
+        "mimeType": "application/pdf"
+      }
+    ]
+  }
+}
