@@ -116,8 +116,8 @@ jobs:
       - name: Verify Homebrew formula metadata
         run: |
           version="$(head -n1 VERSION)"
-          formula_version="$(sed -n 's/^[[:space:]]*version \"\\([0-9][^\"]*\\)\"$/\\1/p' Formula/work2md.rb)"
-          formula_sha="$(sed -n 's/^[[:space:]]*sha256 \"\\([0-9a-f]\\{64\\}\\)\"$/\\1/p' Formula/work2md.rb)"
+          formula_version="$(awk '$1 == "version" { gsub(/"/, "", $2); print $2 }' Formula/work2md.rb)"
+          formula_sha="$(awk '$1 == "sha256" { gsub(/"/, "", $2); print $2 }' Formula/work2md.rb)"
           archive_sha="$(sha256sum "dist/work2md_${version}_portable.tar.gz" | awk '{print $1}')"
 
           if [[ "$formula_version" != "$version" ]]; then
