@@ -22,6 +22,9 @@
   CLI entrypoints, and writes release checksums for both artifact types.
 - The supported install paths are Ubuntu/Debian packages, a Linux portable
   `tar.gz` bundle, and Homebrew on Linux via [`Formula/work2md.rb`](../Formula/work2md.rb).
+- Homebrew formula metadata is verified for tagged `v*` releases. Regular branch
+  builds do not require the formula SHA to match, because the formula tracks
+  published stable release archives rather than every intermediate commit.
 - Pushes to `main` also refresh a rolling GitHub prerelease tagged `edge`.
   The `edge` release reuses the latest `main` commit, marks the GitHub Release
   as a prerelease, and publishes installable assets whose filenames include the
@@ -49,10 +52,14 @@
 ### Stable tagged release
 
 1. Update [`VERSION`](../VERSION), `debian/changelog`, and [`CHANGELOG.md`](../CHANGELOG.md) for the new release.
-2. Rebuild the portable bundle locally and update [`Formula/work2md.rb`](../Formula/work2md.rb) with the matching release URL, version, and SHA-256.
-   The `sha256` must be copied from the freshly built `work2md_<version>_portable.tar.gz`
-   created from the exact release commit; updating only the formula version and
-   URL is not enough.
+2. Refresh [`Formula/work2md.rb`](../Formula/work2md.rb) from the exact release
+   commit. The helper below rebuilds the portable bundle and rewrites the
+   formula URL, version, and SHA-256 from the freshly built
+   `work2md_<version>_portable.tar.gz`:
+
+   ```bash
+   scripts/update-homebrew-formula.sh
+   ```
 3. Commit the release changes and push them to GitHub.
 4. Create a matching Git tag such as `v0.9.0` and push the tag.
 5. GitHub Actions will build the release artifacts automatically and attach them
