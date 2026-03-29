@@ -50,6 +50,9 @@
 
 1. Update [`VERSION`](../VERSION), `debian/changelog`, and [`CHANGELOG.md`](../CHANGELOG.md) for the new release.
 2. Rebuild the portable bundle locally and update [`Formula/work2md.rb`](../Formula/work2md.rb) with the matching release URL, version, and SHA-256.
+   The `sha256` must be copied from the freshly built `work2md_<version>_portable.tar.gz`
+   created from the exact release commit; updating only the formula version and
+   URL is not enough.
 3. Commit the release changes and push them to GitHub.
 4. Create a matching Git tag such as `v0.9.0` and push the tag.
 5. GitHub Actions will build the release artifacts automatically and attach them
