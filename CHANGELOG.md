@@ -19,6 +19,7 @@ The Debian packaging history remains in `debian/changelog`.
 
 ### Changed
 
+- Publish `v0.9.0` as the first official tagged GitHub release for the project.
 - Establish the `0.9.x` line as the first official pre-`1.0` release series for the project.
 - Standardize the release flow so GitHub Release notes are sourced from this changelog.
 
