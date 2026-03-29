@@ -1,0 +1,33 @@
+name: Main Branch Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  require-develop-source:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Allow only develop -> main pull requests
+        env:
+          BASE_REPO: ${{ github.repository }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
+            echo "Pull requests into main must come from the same repository's develop branch." >&2
+            echo "Received source repository: $HEAD_REPO" >&2
+            exit 1
+          fi
+
+          if [[ "$HEAD_REF" != "develop" ]]; then
+            echo "Pull requests into main must use develop as the source branch." >&2
+            echo "Received source branch: $HEAD_REF" >&2
+            exit 1
+          fi
+
+          echo "Source branch policy satisfied: $HEAD_REPO:$HEAD_REF -> main"
