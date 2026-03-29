@@ -3,7 +3,7 @@ class Work2md < Formula
   homepage "https://github.com/green-zen-monk/work2md"
   url "https://github.com/green-zen-monk/work2md/releases/download/v0.9.0/work2md_0.9.0_portable.tar.gz"
   version "0.9.0"
-  sha256 "3af83c72a5893559cf1dcf783dc9871652a1c95227b6160f04214aaac4f3aa8e"
+  sha256 "552e1da2089dc16a13f17bf07bbeafbaeff2c83136d627eed90a74f25add1fd2"
 
   depends_on "python"
 
