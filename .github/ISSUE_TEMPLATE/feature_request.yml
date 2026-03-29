@@ -1,0 +1,46 @@
+name: Feature request
+description: Suggest an improvement or new capability
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion.
+        Please describe the workflow you want to improve and why it matters.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the current limitation or pain point.
+      placeholder: I want to ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the behavior, command flag, output, or workflow you want.
+      placeholder: It would help if ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any workaround or alternate approach you tried.
+      placeholder: Today I work around this by ...
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - jira2md
+        - confluence2md
+        - work2md-config
+        - packaging or installation
+        - documentation
+        - other
+    validations:
+      required: true

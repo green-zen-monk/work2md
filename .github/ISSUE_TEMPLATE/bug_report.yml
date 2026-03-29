@@ -1,0 +1,60 @@
+name: Bug report
+description: Report a reproducible problem in work2md
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem.
+        Please include enough detail for us to reproduce it.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+      placeholder: A short summary of the bug and the expected behavior.
+    validations:
+      required: true
+  - type: dropdown
+    id: command
+    attributes:
+      label: Which command is affected?
+      options:
+        - jira2md
+        - confluence2md
+        - work2md-config
+        - packaging or release flow
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide the exact command, input, and sequence when possible.
+      placeholder: |
+        1. Run ...
+        2. Use ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Paste the error message, stack trace, or unexpected output.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: work2md version
+      description: Output of `jira2md --version`, `confluence2md --version`, or `work2md-config --version`.
+      placeholder: "0.9.0"
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS and version, for example Ubuntu 24.04 or Debian 12.
+      placeholder: Ubuntu 24.04
