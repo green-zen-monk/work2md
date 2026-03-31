@@ -1,5 +1,7 @@
 # work2md
 
+English | [Magyar](README.hu.md)
+
 `work2md` is a CLI toolkit for exporting Jira issues and Confluence Cloud pages
 to Markdown bundles that are practical for docs, backups, automation, and
 AI-oriented workflows.

@@ -85,6 +85,7 @@ install_release_file 644 "$REPO_ROOT/scripts/jira_media_helper.py" "$ARCHIVE_ROO
 install_release_file 644 "$REPO_ROOT/scripts/work2md_export_helper.py" "$ARCHIVE_ROOT/scripts/work2md_export_helper.py"
 install_release_file 644 "$REPO_ROOT/VERSION" "$ARCHIVE_ROOT/VERSION"
 install_release_file 644 "$REPO_ROOT/README.md" "$ARCHIVE_ROOT/README.md"
+install_release_file 644 "$REPO_ROOT/README.hu.md" "$ARCHIVE_ROOT/README.hu.md"
 install_release_file 644 "$REPO_ROOT/CHANGELOG.md" "$ARCHIVE_ROOT/CHANGELOG.md"
 
 mkdir -p "$OUTPUT_DIR"

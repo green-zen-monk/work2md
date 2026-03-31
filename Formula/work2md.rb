@@ -9,7 +9,7 @@ class Work2md < Formula
 
   def install
     bin.install "jira2md", "confluence2md", "work2md-config"
-    pkgshare.install "lib", "scripts", "VERSION", "README.md", "CHANGELOG.md"
+    pkgshare.install "lib", "scripts", "VERSION", "README.md", "README.hu.md", "CHANGELOG.md"
   end
 
   test do

@@ -9,3 +9,4 @@ scripts/__pycache__/
 .codex
 dev/
 dist/
+.codex
